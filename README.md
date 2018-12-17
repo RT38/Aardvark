@@ -8,12 +8,15 @@ Boron
 
 ## Contributors
 
-#### Roger T
+### Roger T
 Revised from Wx_E_V3.1 for the Boron
-
-####Jay Ham
+###
+###
+Jay Ham
 from Particle_RH_T_Rain_U_NTP_Stats_WU_Thingspeak_V5
+##S#
 
+##
 
 #### Purpose
 Monitors Primary Weather Data + Soil Moisture and Temperature
