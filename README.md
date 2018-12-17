@@ -6,10 +6,13 @@ Weather Station Project
 Boron
 ##
 
-### Revision
+### Contributors
+
+#### Roger T
 Revised from Wx_E_V3.1 for the Boron
-Revized from Jay Ham Particle_RH_T_Rain_U_NTP_Stats_WU_Thingspeak_V5)
-###
+####Jay Ham
+from Particle_RH_T_Rain_U_NTP_Stats_WU_Thingspeak_V5
+
 
 #### Purpose
 Monitors Primary Weather Data + Soil Moisture and Temperature
