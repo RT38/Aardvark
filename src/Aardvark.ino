@@ -144,6 +144,7 @@ void setup()
 
  /////Power Management for Solar/Battery
   PMIC pmic; //Initalize the PMIC class so you can call the Power Management functions below. 
+  pmic.setChargeVoltage(4208); // Set Charging voltage t o4.208 volts
   pmic.setChargeCurrent(0,0,1,0,0,0); //Set charging current to 1024mA (512 + 512 offset)
   pmic.setInputVoltageLimit(5080);   //Set the lowest input voltage to 5.08 volts. This keeps my 5v solar panel from operating below 4.84 volts.
  
