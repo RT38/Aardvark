@@ -92,6 +92,7 @@ Statistic pStats; // Preciptiation
 Statistic wStats; // wind
 Statistic wgStats; // wind gust
 Statistic rStats; // Pyranometer
+Statistic mVStats; // Pyranometer mV
 
 Statistic sm1Stats; // soil 1 moisture, cap
 Statistic st1Stats; // soil 1 temp, C
@@ -111,6 +112,7 @@ float havg;
 float davg;
 float wavg;
 float ravg;
+float mVavg;
 float wgmax;
 
 int CurrentSecond = 99;
@@ -299,6 +301,7 @@ void  add_stats()
    hStats.add(h);
    dStats.add(d);
    rStats.add(r);
+   mVStats.add(mV);
    wStats.add(windSpeed_mph);
    wgStats.add(windGust);
    pStats.add(raintotal_mm);
@@ -314,6 +317,7 @@ void  add_stats()
   wavg=wStats.average();
   wgmax=wgStats.maximum();
   ravg=rStats.average();
+  mVavg=mVStats.average();
   rain_total=pStats.sum();
  }
 //Clear Stats ==================================================================
@@ -326,6 +330,7 @@ void clearStats()
    wStats.clear();
    wgStats.clear();
    rStats.clear();
+   mVStats.clear();
 
    raintips = 0;                         // zero raingauge
    raintotal_mm = 0;
@@ -340,8 +345,10 @@ void clearStats()
 // Calculate voltage
 void fuelguage(){
   batt = fuel.getVCell();
+   #ifdef DEBUG
   Serial.print("Batt_volts");
     Serial.println(batt);
+   #endif
 }
 // Calc dewpoint temperature from Tetens eq. using coeff of Murray (1967)
 float Tdew(float Tair, float Rh)
@@ -485,7 +492,7 @@ unsigned long t = Time.now();
 //=============================================================================
 void send_data()
 {
-  Serial.println("Begin Ubidots Send");
+  //Serial.println("Begin Ubidots Send");
   //char context[25];
   //sprintf(context, "lat=%f$lng=%f",Lat, Long); //uncomment to send GPS coords from Global Defs
   unsigned long t = Time.now();
@@ -504,7 +511,7 @@ void send_data()
   ubidots.add("R", raintotal_mm, NULL, t);
   ubidots.add("B", batt, NULL, t);
   ubidots.add("WG", wgmax, NULL, t);
-  ubidots.add("S", ravg, NULL, t);
+  ubidots.add("S", mV, NULL, t);
   bool bufferSent = false;
   bufferSent = ubidots.send(WEBHOOK_NAME, PUBLIC);  // Will send data to a device label that matches the device Id
 
