@@ -5,7 +5,11 @@
 #include "QuickStats.h"
 #include "I2CSoilMoistureSensor.h"
 #include "Ubidots.h"
-#define DEBUG 0  // 1 debug on, 0 debug off
+#include "BatteryCheck.h"
+//#define DEBUG FALSE  // 1 debug on, 0 debug off
+bool DEBUG FALSE;
+
+
 //#define PARTICLE_KEEPALIVE 20
 
 //Global constants ============================================================
@@ -18,7 +22,6 @@ const int send_interval = 5;          // write/send interval
 #ifndef UBIDOTS_TOKEN
 #define UBIDOTS_TOKEN "BBFF-f3e6xyGaYY4dz1UXgUoFaA5I2Hw0MY"  // Put here your Ubidots TOKEN
 #endif
-//#define DEVICE_NAME "VarTrial_v1"
 
 //SHT31 - Temperature, Humidity, Dewpoint ====================================
 Adafruit_SHT31 sht31 = Adafruit_SHT31();  // create SHT31 instance
@@ -27,7 +30,7 @@ float t;                  // air temperature, C
 float d;                  // calculated dewpoint temperature, C
 
 // Tipping Bucket Rain Gauge (Ambient Weather WS2080) - Precip Data=============
-const uint8_t rainPin = D3;      // pin for rain gauge input
+const uint8_t rainPin = D2;      // pin for rain gauge input
 const float rain_cal = 0.2794;   // gauge calibration, mm per tip
 volatile unsigned long  rainlast; // timing variables
 volatile int raintips = 0;       // total # of tips
@@ -36,7 +39,7 @@ float rain_hr, rain_total;
 float previous_rain_total;
 
 // Anemometer (Inspeed) - Wind Data =====================================================
-const uint8_t anemomPin = D2;    // pin for cup anemometer
+const uint8_t anemomPin = D3;    // pin for cup anemometer
 const float windTo_mph = 2.5;    // anemom calibration: Davis=2.25, Inspeed=2.5, Ambient Weather=1.492
 volatile unsigned long PulseTimeLast = 0;       // Time stamp of the previous pulse
 volatile unsigned long PulsesCumulatedTime = 0; // Time Interval since last wind speed calc
@@ -48,7 +51,7 @@ int Pyrraw = 0;
 int PyrValue = 0; // raw value from diode
 float mV; // convert raw value from diode to mV
 float r; // solar irradiance, W/m2
-const float mVTo_Wm2 = 5.740; // cal coeff for photodiode pyranometer, must customize
+const float mVTo_Wm2 = 1; // cal coeff for photodiode pyranometer, must customize
 
 //Debouncer ===================================================================
 //volatile unsigned long LastPulseTimeInterval= 10000000;
@@ -58,6 +61,7 @@ volatile unsigned long LastPulseTimeInterval = 10000000;
 // battery volts ==============================================================
 FuelGauge fuel;
 float batt;
+BatteryCheck batteryCheck(10.0, 3600); // batteryCheck(SOC , wake up in # of seconds)
 
 //Soil Sensors (3) ============================================================
 I2CSoilMoistureSensor sensor1 (0x20);
@@ -100,9 +104,6 @@ Statistic sm2Stats; // soil 2 moisture, cap
 Statistic st2Stats; // soil 2 temp,
 Statistic sm3Stats; // soil 3 moisture, cap
 Statistic st3Stats; // soil 3 temp, C
-Statistic sw1Stats; // soil 1 moisture: %
-Statistic sw2Stats; // soil 2 moisture: %
-Statistic sw3Stats; // soil 3 moisture: %
 
 //Define Averages ==============================================================
 float tavg;
@@ -131,7 +132,7 @@ int numsend = 0;
 
 //TCPClient client; //needed for WXUnderground not used in this sketch
 
-const char* WEBHOOK_NAME = "B";
+const char* WEBHOOK_NAME = "E";
 
 Ubidots ubidots("webhook", UBI_PARTICLE);
 QuickStats stats;
@@ -143,6 +144,7 @@ void setup()
  Wire.begin();
  Time.zone(-7); //set time zone to MST
  //Particle.keepAlive(PARTICLE_KEEPALIVE);
+  batteryCheck.setup();
 
  /////Power Management for Solar/Battery
   PMIC pmic; //Initalize the PMIC class so you can call the Power Management functions below. 
@@ -164,7 +166,7 @@ void setup()
   pinMode(anemomPin, INPUT_PULLUP); // set pin mode for anemometer input
   attachInterrupt(anemomPin, windIRQ, FALLING); // attach interrupt
   //pyranometer
-  pinMode(A0, INPUT);
+  pinMode(A0, INPUT); //initialize A0 as alnalog input for pyranometer
 
   // soil sensor
 
@@ -176,7 +178,7 @@ void setup()
   delay(500);
 
     //delay(1000); // give some time to boot up
-#ifdef DEBUG
+if (DEBUG){
   Serial.print("I2C Soil Moisture Sensor 1 Address: ");
   Serial.println(sensor1.getAddress(),HEX);
   Serial.println();
@@ -187,12 +189,14 @@ void setup()
   Serial.println(sensor3.getAddress(),HEX);
   Serial.println();
   Serial.println(F("sm1,sm2,sm3,st1,st2,st3"));
-#endif
+}
+
 //clear stat data arrays
  clearStats(); // Cleaar Stats subroutine
- sample();
- add_stats();
- calc_stats();
+ sample(); // collect initial sensor data 
+ soilmoisture(); // collect initial SM data
+ add_stats(); // add data to stats array
+ calc_stats(); // calculate initial data
 #ifdef DEBUG
  Serial.println("setup complete");
 #endif
@@ -205,6 +209,7 @@ void setup()
 //MAIN LOOP ----------------------------------------------------------------------------------------------------
 void loop()
 {
+  batteryCheck.loop();
  if (Time.second()%samp_interval==0) // main sampling loop, read sensors
  {
   sample();       

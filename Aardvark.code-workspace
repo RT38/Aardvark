@@ -5,8 +5,8 @@
 		}
 	],
 	"settings": {
-		"particle.targetDevice": "Boron_WxA",
-		"particle.firmwareVersion": "0.8.0-rc.25",
-		"particle.targetPlatform": "boron"
+		"particle.targetDevice": "Burlington",
+		"particle.firmwareVersion": "0.7.0",
+		"particle.targetPlatform": "electron"
 	}
 }
