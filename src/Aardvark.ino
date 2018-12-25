@@ -197,9 +197,10 @@ if (DEBUG){
  soilmoisture(); // collect initial SM data
  add_stats(); // add data to stats array
  calc_stats(); // calculate initial data
-#ifdef DEBUG
- Serial.println("setup complete");
-#endif
+if (DEBUG)
+  {
+    Serial.println("setup complete");
+  }
   Particle.publish("Setup complete",NULL);
   
   //ubidots.setDebug(true); //Uncomment this line for printing debug messages
@@ -210,35 +211,38 @@ if (DEBUG){
 void loop()
 {
   batteryCheck.loop();
- if (Time.second()%samp_interval==0) // main sampling loop, read sensors
+if (Time.second()%samp_interval==0) // main sampling loop, read sensors
  {
   sample();       
   add_stats();
   // end interval
-if (Time.minute()%send_interval ==0 && Time.minute()!=last_send_time)
-  {
-  last_send_time = Time.minute();
-    if (sm1med <100) // take initial soil readings
+  if (Time.minute()%send_interval ==0 && Time.minute()!=last_send_time)
     {
-      soilmoisture();
+      last_send_time = Time.minute();
+      if (sm1med <100) // take initial soil readings
+        {
+          soilmoisture();
+        }
+        calc_stats();
+        clearStats(); // clear stats after assigning values to object
+      if (DEBUG)
+        {
+            Serial.println("===============================");
+            Serial.println("Average Readings");
+            Serial.println("===============================");
+        }
+        delay(100);
+        send_data();  // Send Soils Data
+      if (DEBUG)
+        {
+          Serial.println("===============================");
+          Serial.println("send data to Ubidots");
+          Serial.println("===============================");
+        }
     }
-      calc_stats();
-      clearStats(); // clear stats after assigning values to object
-      #ifdef DEBUG                               // print results during debug
-      Serial.println("===============================");
-      Serial.println("Average Readings");
-      Serial.println("===============================");
-      #endif
 
-      delay(100);
-      send_data();  // Send Soils Data
-      #ifdef DEBUG                               // print results during debug
-      Serial.println("===============================");
-      Serial.println("send data to Ubidots");
-      Serial.println("===============================");
-      #endif
-  }
-       #ifdef DEBUG
+  if (DEBUG)
+    {
       Serial.println("check sensors");                              // print results during debug
       Serial.println();
       Serial.print("Time: "); Serial.print(Time.hour()); Serial.print(":"), Serial.print(Time.minute()); Serial.print(":"), Serial.println(Time.second());
@@ -251,7 +255,6 @@ if (Time.minute()%send_interval ==0 && Time.minute()!=last_send_time)
       Serial.print(r);Serial.print("\t");
       Serial.println(raintips);
       Serial.println();
-
       Serial.println("=========================================");
       Serial.print("Median Shallow Soil Moisture: ");
       Serial.println(sm1med);
@@ -271,8 +274,8 @@ if (Time.minute()%send_interval ==0 && Time.minute()!=last_send_time)
       Serial.print("Batt_volts: ");
       Serial.println(batt);
       Serial.println("=================================");
-      #endif
-      }
+    }
+  }
       if (Time.minute()==0 && Time.hour()!=previous_hours)
         {       // on the hour, calc hourly rain and read soil moisture
            previous_hours=Time.hour();
@@ -346,14 +349,9 @@ void clearStats()
    }
  }
 
-
 // Calculate voltage
 void fuelguage(){
   batt = fuel.getVCell();
-   #ifdef DEBUG
-  Serial.print("Batt_volts");
-    Serial.println(batt);
-   #endif
 }
 // Calc dewpoint temperature from Tetens eq. using coeff of Murray (1967)
 float Tdew(float Tair, float Rh)
@@ -491,7 +489,7 @@ unsigned long t = Time.now();
 
   if(bufferSent){
     // Do something if values were sent properly
-    Particle.publish("STSENT",NULL);
+    Particle.publish("SOIL_DATA_SENT",NULL);
   }
 }
 //=============================================================================
@@ -509,7 +507,7 @@ void send_data()
   UbiBuffer = ubidots.send(WEBHOOK_NAME, PUBLIC);  // Will send data to a device label that matches the device Id
     if(UbiBuffer){
     // Do something if values were sent properly
-    Particle.publish("5mSENT1",NULL);
+    Particle.publish("5mSENT_PT1",NULL);
   }
 
 
@@ -522,6 +520,6 @@ void send_data()
 
   if(bufferSent){
     // Do something if values were sent properly
-    Particle.publish("5mSENT2",NULL);
+    Particle.publish("5mSENT_PT2",NULL);
   }
 }
