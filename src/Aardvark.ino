@@ -27,7 +27,7 @@ float t;                  // air temperature, C
 float d;                  // calculated dewpoint temperature, C
 
 // Tipping Bucket Rain Gauge (Ambient Weather WS2080) - Precip Data=============
-const uint8_t rainPin = D3;      // pin for rain gauge input
+const uint8_t rainPin = D2;      // pin for rain gauge input
 const float rain_cal = 0.2794;   // gauge calibration, mm per tip
 volatile unsigned long  rainlast; // timing variables
 volatile int raintips = 0;       // total # of tips
@@ -36,7 +36,7 @@ float rain_hr, rain_total;
 float previous_rain_total;
 
 // Anemometer (Inspeed) - Wind Data =====================================================
-const uint8_t anemomPin = D2;    // pin for cup anemometer
+const uint8_t anemomPin = D3;    // pin for cup anemometer
 const float windTo_mph = 2.5;    // anemom calibration: Davis=2.25, Inspeed=2.5, Ambient Weather=1.492
 volatile unsigned long PulseTimeLast = 0;       // Time stamp of the previous pulse
 volatile unsigned long PulsesCumulatedTime = 0; // Time Interval since last wind speed calc
