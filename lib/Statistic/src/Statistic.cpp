@@ -104,7 +104,7 @@ void Statistic::add(const float value)
 // returns the average of the data-set added sofar
 float Statistic::average() const
 {
-    if (_cnt == 0) return 99999; // original code returned 0, RT changed to 9999 instead of NAN
+    if (_cnt == 0) return 999; // original code returned 0, RT changed to 9999 instead of NAN
     return _sum / _cnt;
 }
 
@@ -114,21 +114,22 @@ float Statistic::average() const
 
 float Statistic::variance() const
 {
-    if (_cnt == 0) return NAN; // otherwise DIV0 error
+    if (_cnt == 0) return 999; // otherwise DIV0 error
     return _ssqdif / _cnt;
 }
 
 float Statistic::pop_stdev() const
 {
-    if (_cnt == 0) return NAN; // otherwise DIV0 error
+    if (_cnt == 0) return 999; // otherwise DIV0 error
     return sqrt( _ssqdif / _cnt);
 }
 
 float Statistic::unbiased_stdev() const
 {
-    if (_cnt < 2) return NAN; // otherwise DIV0 error
+    if (_cnt < 2) return 999; // otherwise DIV0 error
     return sqrt( _ssqdif / (_cnt - 1));
 }
+
 
 #endif
 // END OF FILE

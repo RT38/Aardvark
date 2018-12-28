@@ -48,7 +48,7 @@ int Pyrraw = 0;
 int PyrValue = 0; // raw value from diode
 float mV; // convert raw value from diode to mV
 float r; // solar irradiance, W/m2
-const float mVTo_Wm2 = 5.740; // cal coeff for photodiode pyranometer, must customize
+const float mVTo_Wm2 = 1; // cal coeff for photodiode pyranometer, must customize
 
 //Debouncer ===================================================================
 //volatile unsigned long LastPulseTimeInterval= 10000000;
@@ -499,7 +499,6 @@ void send_data()
   ubidots.add("T", tavg, NULL, t);  // Change for your variable name
   ubidots.add("H", havg, NULL, t);
   ubidots.add("D", davg, NULL, t);
-  ubidots.add("W", wavg, NULL, t);
   bool UbiBuffer = false;
   UbiBuffer = ubidots.send(WEBHOOK_NAME, PUBLIC);  // Will send data to a device label that matches the device Id
     if(UbiBuffer){
@@ -507,7 +506,7 @@ void send_data()
     Particle.publish("5mSENT1",NULL);
   }
 
-
+  ubidots.add("W", wavg, NULL, t);
   ubidots.add("R", raintotal_mm, NULL, t);
   ubidots.add("B", batt, NULL, t);
   ubidots.add("WG", wgmax, NULL, t);

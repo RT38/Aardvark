@@ -5,8 +5,8 @@
 		}
 	],
 	"settings": {
-		"particle.targetDevice": "BoronWxA",
-		"particle.firmwareVersion": "0.8.0-rc.25",
+		"particle.targetDevice": "ninja_narwhal",
+		"particle.firmwareVersion": "0.8.0-rc.27",
 		"particle.targetPlatform": "boron"
 	}
 }
