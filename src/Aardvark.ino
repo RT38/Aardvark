@@ -126,11 +126,7 @@ int last_send_time = 99;
 int i=0;
 int oldminute = 99;
 int oldseconds = 99;
-//int write_time = 99; // delete?
-//int numloop = 0;
 int numsend = 0;
-
-//TCPClient client; //needed for WXUnderground not used in this sketch
 
 const char* WEBHOOK_NAME = "E";
 
