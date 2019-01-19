@@ -5,8 +5,8 @@
 		}
 	],
 	"settings": {
-		"particle.targetDevice": "ninja_narwhal",
-		"particle.firmwareVersion": "0.8.0-rc.27",
+		"particle.targetDevice": "Roggen",
+		"particle.firmwareVersion": "0.8.0-rc.26",
 		"particle.targetPlatform": "boron"
 	}
 }

@@ -164,7 +164,7 @@ void setup()
   pinMode(anemomPin, INPUT_PULLUP); // set pin mode for anemometer input
   attachInterrupt(anemomPin, windIRQ, FALLING); // attach interrupt
   //pyranometer
-  pinMode(A0, INPUT);
+  pinMode(A5, INPUT);
 
   // soil sensor
 
@@ -421,7 +421,7 @@ void rainIRQ()
 //Pyranometer===================================================================
 void pyranometer()
 {
-Pyrraw = analogRead(A0);
+Pyrraw = analogRead(A5);
 mV = Pyrraw*(3.3/4096)*1000; //(256 8-bit, 1024 10-bit, 4096 12-bit)
 r = mVTo_Wm2*mV;
 //Serial.println();
