@@ -5,8 +5,8 @@
 		}
 	],
 	"settings": {
-		"particle.targetDevice": "Roggen",
-		"particle.firmwareVersion": "0.8.0-rc.26",
+		"particle.targetDevice": "Boron_WxA",
+		"particle.firmwareVersion": "0.8.0-rc.25",
 		"particle.targetPlatform": "boron"
 	}
 }

@@ -1,22 +1,12 @@
 # Aardvark
 Weather Station Project
-#
 
 ## Platform
 Boron
-##
 
-## Contributors
-
-### Roger T
+### Revision
 Revised from Wx_E_V3.1 for the Boron
-###
-###
-Jay Ham
-from Particle_RH_T_Rain_U_NTP_Stats_WU_Thingspeak_V5
-###
-
-##
+Revized from Jay Ham Particle_RH_T_Rain_U_NTP_Stats_WU_Thingspeak_V5)
 
 #### Purpose
 Monitors Primary Weather Data + Soil Moisture and Temperature
