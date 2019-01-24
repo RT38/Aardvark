@@ -27,7 +27,7 @@ float t;                  // air temperature, C
 float d;                  // calculated dewpoint temperature, C
 
 // Tipping Bucket Rain Gauge (Ambient Weather WS2080) - Precip Data=============
-const uint8_t rainPin = D3;      // pin for rain gauge input
+const uint8_t rainPin = D2;      // pin for rain gauge input
 const float rain_cal = 0.2794;   // gauge calibration, mm per tip
 volatile unsigned long  rainlast; // timing variables
 volatile int raintips = 0;       // total # of tips
@@ -36,7 +36,7 @@ float rain_hr, rain_total;
 float previous_rain_total;
 
 // Anemometer (Inspeed) - Wind Data =====================================================
-const uint8_t anemomPin = D2;    // pin for cup anemometer
+const uint8_t anemomPin = D3;    // pin for cup anemometer
 const float windTo_mph = 2.5;    // anemom calibration: Davis=2.25, Inspeed=2.5, Ambient Weather=1.492
 volatile unsigned long PulseTimeLast = 0;       // Time stamp of the previous pulse
 volatile unsigned long PulsesCumulatedTime = 0; // Time Interval since last wind speed calc
@@ -48,7 +48,7 @@ int Pyrraw = 0;
 int PyrValue = 0; // raw value from diode
 float mV; // convert raw value from diode to mV
 float r; // solar irradiance, W/m2
-const float mVTo_Wm2 = 5.740; // cal coeff for photodiode pyranometer, must customize
+const float mVTo_Wm2 = 1; // cal coeff for photodiode pyranometer, must customize
 
 //Debouncer ===================================================================
 //volatile unsigned long LastPulseTimeInterval= 10000000;
@@ -92,6 +92,7 @@ Statistic pStats; // Preciptiation
 Statistic wStats; // wind
 Statistic wgStats; // wind gust
 Statistic rStats; // Pyranometer
+Statistic mVStats; // Pyranometer mV
 
 Statistic sm1Stats; // soil 1 moisture, cap
 Statistic st1Stats; // soil 1 temp, C
@@ -111,6 +112,7 @@ float havg;
 float davg;
 float wavg;
 float ravg;
+float mVavg;
 float wgmax;
 
 int CurrentSecond = 99;
@@ -144,6 +146,7 @@ void setup()
 
  /////Power Management for Solar/Battery
   PMIC pmic; //Initalize the PMIC class so you can call the Power Management functions below. 
+  pmic.setChargeVoltage(4208); // Set Charging voltage t o4.208 volts
   pmic.setChargeCurrent(0,0,1,0,0,0); //Set charging current to 1024mA (512 + 512 offset)
   pmic.setInputVoltageLimit(5080);   //Set the lowest input voltage to 5.08 volts. This keeps my 5v solar panel from operating below 4.84 volts.
  
@@ -161,7 +164,7 @@ void setup()
   pinMode(anemomPin, INPUT_PULLUP); // set pin mode for anemometer input
   attachInterrupt(anemomPin, windIRQ, FALLING); // attach interrupt
   //pyranometer
-  pinMode(A0, INPUT);
+  pinMode(A5, INPUT);
 
   // soil sensor
 
@@ -298,6 +301,7 @@ void  add_stats()
    hStats.add(h);
    dStats.add(d);
    rStats.add(r);
+   mVStats.add(mV);
    wStats.add(windSpeed_mph);
    wgStats.add(windGust);
    pStats.add(raintotal_mm);
@@ -313,6 +317,7 @@ void  add_stats()
   wavg=wStats.average();
   wgmax=wgStats.maximum();
   ravg=rStats.average();
+  mVavg=mVStats.average();
   rain_total=pStats.sum();
  }
 //Clear Stats ==================================================================
@@ -325,6 +330,7 @@ void clearStats()
    wStats.clear();
    wgStats.clear();
    rStats.clear();
+   mVStats.clear();
 
    raintips = 0;                         // zero raingauge
    raintotal_mm = 0;
@@ -339,8 +345,10 @@ void clearStats()
 // Calculate voltage
 void fuelguage(){
   batt = fuel.getVCell();
+   #ifdef DEBUG
   Serial.print("Batt_volts");
     Serial.println(batt);
+   #endif
 }
 // Calc dewpoint temperature from Tetens eq. using coeff of Murray (1967)
 float Tdew(float Tair, float Rh)
@@ -413,7 +421,7 @@ void rainIRQ()
 //Pyranometer===================================================================
 void pyranometer()
 {
-Pyrraw = analogRead(A0);
+Pyrraw = analogRead(A5);
 mV = Pyrraw*(3.3/4096)*1000; //(256 8-bit, 1024 10-bit, 4096 12-bit)
 r = mVTo_Wm2*mV;
 //Serial.println();
@@ -484,14 +492,13 @@ unsigned long t = Time.now();
 //=============================================================================
 void send_data()
 {
-  Serial.println("Begin Ubidots Send");
+  //Serial.println("Begin Ubidots Send");
   //char context[25];
   //sprintf(context, "lat=%f$lng=%f",Lat, Long); //uncomment to send GPS coords from Global Defs
   unsigned long t = Time.now();
   ubidots.add("T", tavg, NULL, t);  // Change for your variable name
   ubidots.add("H", havg, NULL, t);
   ubidots.add("D", davg, NULL, t);
-  ubidots.add("W", wavg, NULL, t);
   bool UbiBuffer = false;
   UbiBuffer = ubidots.send(WEBHOOK_NAME, PUBLIC);  // Will send data to a device label that matches the device Id
     if(UbiBuffer){
@@ -499,11 +506,11 @@ void send_data()
     Particle.publish("5mSENT1",NULL);
   }
 
-
+  ubidots.add("W", wavg, NULL, t);
   ubidots.add("R", raintotal_mm, NULL, t);
   ubidots.add("B", batt, NULL, t);
   ubidots.add("WG", wgmax, NULL, t);
-  ubidots.add("S", ravg, NULL, t);
+  ubidots.add("S", mV, NULL, t);
   bool bufferSent = false;
   bufferSent = ubidots.send(WEBHOOK_NAME, PUBLIC);  // Will send data to a device label that matches the device Id
 
